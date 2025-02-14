@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Board Admin</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+    <!-- Previous styles remain the same -->
+    <style>
+        /* Previous styles remain unchanged */
+    </style>
+</head>
+<body>
+    <!-- Previous HTML structure remains unchanged -->
+    <script>
+        const ADMIN_PASSWORD = '320West8st!';
+        let editors_initialized = false;
+        
+        // Initialize TinyMCE editors
+        function initializeEditors() {
+            if (!editors_initialized) {
+                tinymce.init({
+                    selector: '#description',
+                    height: 300,
+                    menubar: false,
+                    plugins: [
+                        'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
+                        'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                        'insertdatetime', 'table', 'code', 'help', 'wordcount'
+                    ],
+                    toolbar: 'undo redo | formatselect | ' +
+                        'bold italic backcolor | alignleft aligncenter ' +
+                        'alignright alignjustify | bullist numlist outdent indent | ' +
+                        'removeformat | help',
+                    content_style: 'body { font-family: Arial, sans-serif; font-size: 14px }'
+                });
+
+                tinymce.init({
+                    selector: '#requirements',
+                    height: 300,
+                    menubar: false,
+                    plugins: [
+                        'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
+                        'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                        'insertdatetime', 'table', 'code', 'help', 'wordcount'
+                    ],
+                    toolbar: 'undo redo | formatselect | ' +
+                        'bold italic backcolor | alignleft aligncenter ' +
+                        'alignright alignjustify | bullist numlist outdent indent | ' +
+                        'removeformat | help',
+                    content_style: 'body { font-family: Arial, sans-serif; font-size: 14px }'
+                });
+                editors_initialized = true;
+            }
+        }
+        
+        function checkPassword() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('adminLogin').style.display = 'none';
+                initializeEditors();
+                displayJobs();
+            } else {
+                alert('Incorrect password');
+            }
+        }
+
+        let jobs = JSON.parse(localStorage.getItem('jobs')) || [];
+
+        document.getElementById('jobForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Wait for editors to be ready
+            if (!editors_initialized) {
+                alert('Please wait for the editors to initialize');
+                return;
+            }
+
+            const newJob = {
+                id: Date.now(),
+                title: document.getElementById('title').value,
+                company: document.getElementById('company').value,
+                location: document.getElementById('location').value,
+                description: tinymce.get('description').getContent(),
+                requirements: tinymce.get('requirements').getContent(),
+                applyLink: document.getElementById('applyLink').value,
+                date: new Date().toISOString()
+            };
+
+            jobs.unshift(newJob); // Add to beginning of array
+            localStorage.setItem('jobs', JSON.stringify(jobs));
+            
+            // Reset form and editors
+            this.reset();
+            tinymce.get('description').setContent('');
+            tinymce.get('requirements').setContent('');
+            
+            displayJobs();
+            alert('Job posted successfully!');
+        });
+
+        // Rest of the code remains the same
+    </script>
+</body>
+</html>

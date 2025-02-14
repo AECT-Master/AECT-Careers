@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Listings</title>
+    <!-- Previous styles remain the same -->
+    <style>
+        /* Add this new style for the date */
+        .job-date {
+            color: #95a5a6;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="job-board-container">
+        <div id="jobListings"></div>
+    </div>
+
+    <script>
+        // Previous functions remain the same
+
+        // Updated displayJobs function
+        function displayJobs() {
+            const jobListings = document.getElementById('jobListings');
+            jobListings.innerHTML = '';
+
+            jobs.forEach(job => {
+                const jobCard = document.createElement('div');
+                jobCard.className = 'job-card';
+                
+                const previewText = stripHtml(job.description).substring(0, 150) + '...';
+                const postDate = new Date(job.date).toLocaleDateString();
+
+                jobCard.innerHTML = `
+                    <div class="job-title">${job.title}</div>
+                    <div class="job-company">${job.company}</div>
+                    <div class="job-location">${job.location}</div>
+                    <div class="job-date">Posted: ${postDate}</div>
+                    
+                    <div id="preview-${job.id}" class="job-preview">
+                        <div class="job-description">${previewText}</div>
+                    </div>
+
+                    <div id="full-description-${job.id}" class="job-full-description" style="display: none;">
+                        <div class="job-description">${job.description}</div>
+                        <div class="job-requirements">
+                            <strong>Requirements:</strong><br>
+                            ${job.requirements}
+                        </div>
+                        <a href="${job.applyLink}" target="_blank" class="apply-button">Apply Now</a>
+                    </div>
+
+                    <span id="show-more-${job.id}" class="show-more" onclick="toggleDescription(${job.id})">Show More</span>
+                `;
+
+                jobListings.appendChild(jobCard);
+            });
+        }
+
+        // Initial display
+        displayJobs();
+    </script>
+</body>
+</html>
