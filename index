@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AECT Logo</title>
+    <style>
+        .logo-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .logo {
+            max-width: 50%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="https://higherlogicdownload.s3.amazonaws.com/AECT/48d18aca-4de7-437f-9023-69f2faa948d8/UploadedImages/AECT_logo_white_background.jpg" 
+             alt="AECT Logo" 
+             class="logo">
+    </div>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Listings</title>
+    <style>
+        .job-board-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .job-card {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .job-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .job-preview {
+            margin-bottom: 15px;
+        }
+
+        .job-full-description {
+            display: none;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .job-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .job-company {
+            font-weight: bold;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .job-location {
+            color: #95a5a6;
+            margin-bottom: 10px;
+        }
+
+        .job-date {
+            color: #95a5a6;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .job-description {
+            color: #34495e;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .job-description ul, 
+        .job-requirements ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .job-description ol, 
+        .job-requirements ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .job-description li, 
+        .job-requirements li {
+            margin-bottom: 5px;
+        }
+
+        .job-description p, 
+        .job-requirements p {
+            margin-bottom: 15px;
+        }
+
+        .job-requirements {
+            color: #34495e;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .apply-button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .apply-button:hover {
+            background-color: #2980b9;
+        }
+
+        .show-more {
+            color: #3498db;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .job-description strong, 
+        .job-requirements strong {
+            font-weight: bold;
+        }
+
+        .job-description em, 
+        .job-requirements em {
+            font-style: italic;
+        }
+
+        .job-description u, 
+        .job-requirements u {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="job-board-container">
+        <div id="jobListings"></div>
+    </div>
+
+    <script>
+        // Initialize jobs from localStorage
+        let jobs = JSON.parse(localStorage.getItem('jobs')) || [];
+
+        // Toggle job description
+        function toggleDescription(id) {
+            const fullDescription = document.getElementById(`full-description-${id}`);
+            const preview = document.getElementById(`preview-${id}`);
+            const showMoreBtn = document.getElementById(`show-more-${id}`);
+            
+            if (fullDescription.style.display === 'none') {
+                fullDescription.style.display = 'block';
+                preview.style.display = 'none';
+                showMoreBtn.textContent = 'Show Less';
+            } else {
+                fullDescription.style.display = 'none';
+                preview.style.display = 'block';
+                showMoreBtn.textContent = 'Show More';
+            }
+        }
+
+        // Function to strip HTML tags for preview
+        function stripHtml(html) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+        }
+
+        // Display jobs
+        function displayJobs() {
+            const jobListings = document.getElementById('jobListings');
+            jobListings.innerHTML = '';
+
+            jobs.forEach(job => {
+                const jobCard = document.createElement('div');
+                jobCard.className = 'job-card';
+                
+                const previewText = stripHtml(job.description).substring(0, 150) + '...';
+                const postDate = new Date(job.date).toLocaleDateString();
+
+                jobCard.innerHTML = `
+                    <div class="job-title">${job.title}</div>
+                    <div class="job-company">${job.company}</div>
+                    <div class="job-location">${job.location}</div>
+                    <div class="job-date">Posted: ${postDate}</div>
+                    
+                    <div id="preview-${job.id}" class="job-preview">
+                        <div class="job-description">${previewText}</div>
+                    </div>
+
+                    <div id="full-description-${job.id}" class="job-full-description" style="display: none;">
+                        <div class="job-description">${job.description}</div>
+                        <div class="job-requirements">
+                            <strong>Requirements:</strong><br>
+                            ${job.requirements}
+                        </div>
+                        <a href="${job.applyLink}" target="_blank" class="apply-button">Apply Now</a>
+                    </div>
+
+                    <span id="show-more-${job.id}" class="show-more" onclick="toggleDescription(${job.id})">Show More</span>
+                `;
+
+                jobListings.appendChild(jobCard);
+            });
+        }
+
+        // Initial display
+        displayJobs();
+    </script>
+</body>
+</html>
