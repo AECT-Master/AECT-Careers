@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Board Admin</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
     <style>
-        /* Your existing admin styles remain the same */
         .admin-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -117,6 +120,21 @@
     </div>
 
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpAP_P-zUDbjpyIdK9OPH1zosfW_LEnn4",
+            authDomain: "aect-job-board.firebaseapp.com",
+            projectId: "aect-job-board",
+            storageBucket: "aect-job-board.firebasestorage.app",
+            messagingSenderId: "503045484905",
+            appId: "1:503045484905:web:5bf30bc4b4ad654a3c4df8",
+            measurementId: "G-K50PJ33EQZ"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         const ADMIN_PASSWORD = '320West8st!';
         let editors_initialized = false;
         
@@ -175,8 +193,6 @@
             }
         }
 
-        let jobs = JSON.parse(localStorage.getItem('jobs')) || [];
-
         document.getElementById('jobForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -186,7 +202,6 @@
             }
 
             const newJob = {
-                id: Date.now(),
                 title: document.getElementById('title').value,
                 company: document.getElementById('company').value,
                 location: document.getElementById('location').value,
@@ -196,45 +211,65 @@
                 date: new Date().toISOString()
             };
 
-            jobs.unshift(newJob);
-            localStorage.setItem('jobs', JSON.stringify(jobs));
-            
-            this.reset();
-            tinymce.get('description').setContent('');
-            tinymce.get('requirements').setContent('');
-            
-            displayJobs();
-            alert('Job posted successfully!');
+            try {
+                await db.collection('jobs').add(newJob);
+                
+                this.reset();
+                tinymce.get('description').setContent('');
+                tinymce.get('requirements').setContent('');
+                
+                displayJobs();
+                alert('Job posted successfully!');
+            } catch (error) {
+                console.error("Error adding job: ", error);
+                alert('Error posting job. Please try again.');
+            }
         });
 
         function deleteJob(id) {
             if (confirm('Are you sure you want to delete this job posting?')) {
-                jobs = jobs.filter(job => job.id !== id);
-                localStorage.setItem('jobs', JSON.stringify(jobs));
-                displayJobs();
+                db.collection('jobs').doc(id).delete()
+                    .then(() => {
+                        displayJobs();
+                    })
+                    .catch((error) => {
+                        console.error("Error removing job: ", error);
+                        alert('Error deleting job. Please try again.');
+                    });
             }
         }
 
         function displayJobs() {
             const jobListings = document.getElementById('jobListings');
-            jobListings.innerHTML = '';
+            jobListings.innerHTML = '<p>Loading jobs...</p>';
 
-            jobs.forEach(job => {
-                const jobCard = document.createElement('div');
-                jobCard.className = 'job-card';
-                const postDate = new Date(job.date).toLocaleDateString();
-                
-                jobCard.innerHTML = `
-                    <h3>${job.title}
-                        <button class="delete-button" onclick="deleteJob(${job.id})">Delete</button>
-                    </h3>
-                    <div>${job.company}</div>
-                    <div>${job.location}</div>
-                    <div><strong>Posted:</strong> ${postDate}</div>
-                `;
+            db.collection('jobs')
+                .orderBy('date', 'desc')
+                .get()
+                .then((querySnapshot) => {
+                    jobListings.innerHTML = '';
+                    
+                    querySnapshot.forEach((doc) => {
+                        const job = doc.data();
+                        const jobCard = document.createElement('div');
+                        jobCard.className = 'job-card';
+                        
+                        jobCard.innerHTML = `
+                            <h3>${job.title}
+                                <button class="delete-button" onclick="deleteJob('${doc.id}')">Delete</button>
+                            </h3>
+                            <div>${job.company}</div>
+                            <div>${job.location}</div>
+                            <div><strong>Posted:</strong> ${new Date(job.date).toLocaleDateString()}</div>
+                        `;
 
-                jobListings.appendChild(jobCard);
-            });
+                        jobListings.appendChild(jobCard);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error getting jobs: ", error);
+                    jobListings.innerHTML = '<p>Error loading jobs. Please try again later.</p>';
+                });
         }
     </script>
 </body>

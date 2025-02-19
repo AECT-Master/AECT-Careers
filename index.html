@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Listings</title>
+    <title>AECT Job Listings</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
     <style>
-        /* All your existing styles remain the same */
         .job-board-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -107,8 +110,20 @@
     </div>
 
     <script>
-        // Initialize jobs from localStorage
-        let jobs = JSON.parse(localStorage.getItem('jobs')) || [];
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpAP_P-zUDbjpyIdK9OPH1zosfW_LEnn4",
+            authDomain: "aect-job-board.firebaseapp.com",
+            projectId: "aect-job-board",
+            storageBucket: "aect-job-board.firebasestorage.app",
+            messagingSenderId: "503045484905",
+            appId: "1:503045484905:web:5bf30bc4b4ad654a3c4df8",
+            measurementId: "G-K50PJ33EQZ"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         // Toggle job description
         function toggleDescription(id) {
@@ -134,51 +149,6 @@
             return tmp.textContent || tmp.innerText || '';
         }
 
-        // Display jobs
+        // Display jobs from Firestore
         function displayJobs() {
             const jobListings = document.getElementById('jobListings');
-            jobListings.innerHTML = '';
-
-            if (jobs.length === 0) {
-                jobListings.innerHTML = '<p>No job listings available at this time.</p>';
-                return;
-            }
-
-            jobs.forEach(job => {
-                const jobCard = document.createElement('div');
-                jobCard.className = 'job-card';
-                
-                const previewText = stripHtml(job.description).substring(0, 150) + '...';
-                const postDate = new Date(job.date).toLocaleDateString();
-
-                jobCard.innerHTML = `
-                    <div class="job-title">${job.title}</div>
-                    <div class="job-company">${job.company}</div>
-                    <div class="job-location">${job.location}</div>
-                    <div class="job-date">Posted: ${postDate}</div>
-                    
-                    <div id="preview-${job.id}" class="job-preview">
-                        <div class="job-description">${previewText}</div>
-                    </div>
-
-                    <div id="full-description-${job.id}" class="job-full-description" style="display: none;">
-                        <div class="job-description">${job.description}</div>
-                        <div class="job-requirements">
-                            <strong>Requirements:</strong><br>
-                            ${job.requirements}
-                        </div>
-                        <a href="${job.applyLink}" target="_blank" class="apply-button">Apply Now</a>
-                    </div>
-
-                    <span id="show-more-${job.id}" class="show-more" onclick="toggleDescription(${job.id})">Show More</span>
-                `;
-
-                jobListings.appendChild(jobCard);
-            });
-        }
-
-        // Initial display
-        displayJobs();
-    </script>
-</body>
-</html>
